@@ -1,0 +1,30 @@
+name: Test DM (manual only)
+
+# Manual trigger only — deliberately no `schedule:`, so this can never fire
+# on its own. Sends a single DM to the one user id given below and nothing
+# else; SLACK_CHANNEL_ID is intentionally not passed to the script.
+on:
+  workflow_dispatch:
+    inputs:
+      user_id:
+        # No default on purpose: this repo is public, and a default would
+        # publish a real member id. Paste your own when running it.
+        description: 'Slack user id to DM (the ONLY recipient), e.g. U0123ABCD'
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - run: node scripts/test-dm.js
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          TEST_USER_ID: ${{ inputs.user_id }}

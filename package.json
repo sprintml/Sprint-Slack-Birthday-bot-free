@@ -1,0 +1,11 @@
+{
+  "name": "birthday-bot",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "send": "node scripts/send-birthdays.js"
+  }
+}

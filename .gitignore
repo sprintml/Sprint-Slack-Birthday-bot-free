@@ -1,0 +1,4 @@
+# Real birthday data is personal information about colleagues and must never be
+# committed — it lives in the BIRTHDAYS_JSON repo secret instead. Keeping a
+# local working copy to paste into that secret is fine; committing it is not.
+birthdays.json

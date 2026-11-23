@@ -1,0 +1,44 @@
+name: Birthday bot
+
+on:
+  schedule:
+    # Each run schedules TOMORROW's 10:00 Berlin messages, so it has ~26 hours
+    # of slack. That matters: these runs are routinely tens of minutes late and
+    # have been observed >11h late, which used to push them past the delivery
+    # time. Two runs for redundancy in case one is dropped entirely — whichever
+    # lands second finds the messages already scheduled and exits without
+    # duplicating. Deliberately off the top of the hour, which is the most
+    # contended slot. Keep both well away from local midnight (see berlinParts).
+    - cron: '17 4 * * *'
+    - cron: '17 13 * * *'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Send even if messages are already scheduled or 10:00 has passed'
+        type: boolean
+        default: false
+
+# Never let a manual dispatch overlap a scheduled run — that would double up
+# every message. Sequential duplicate runs are caught in the script instead.
+concurrency:
+  group: birthday-bot
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - run: node scripts/send-birthdays.js
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
+          BIRTHDAYS_JSON: ${{ secrets.BIRTHDAYS_JSON }}
+          FORCE_SEND: ${{ inputs.force }}
